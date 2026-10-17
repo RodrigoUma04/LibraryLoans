@@ -1,1 +1,5 @@
 .idea/
+*.pdf
+bin/
+obj/
+*.DotSettings.user
