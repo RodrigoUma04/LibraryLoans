@@ -15,6 +15,4 @@ public abstract class GenericRepository<T>(LibraryLoansDbContext dbContext) : IG
         await DbContext.Set<T>().AsNoTracking().ToListAsync(cancellationToken);
 
     public void Add(T entity) => DbContext.Add(entity);
-
-    public void Delete(T entity) => DbContext.Remove(entity);
 }

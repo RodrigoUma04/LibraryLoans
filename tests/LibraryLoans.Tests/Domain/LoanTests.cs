@@ -43,7 +43,7 @@ public class LoanTests
         Result result = _loan.Return(LoanDate.AddDays(10));
         
         Assert.That(result.IsFailure);
-        Assert.That(result.Error, Does.Contain("already returned"));
+        Assert.That(result.Errors, Has.Some.Contains("already returned"));
     }
 
     [Test]
@@ -54,7 +54,7 @@ public class LoanTests
         Result result = _loan.Return(returnDate);
         
         Assert.That(result.IsFailure);
-        Assert.That(result.Error, Does.Contain("after the loan date"));
+        Assert.That(result.Errors, Has.Some.Contains("after the loan date"));
     }
     
     [Test]

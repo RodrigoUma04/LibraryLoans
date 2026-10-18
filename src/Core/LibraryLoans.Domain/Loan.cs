@@ -28,10 +28,10 @@ public class Loan : BaseEntity
     public Result Return(DateTime returnDate)
     {
         if (DateOfReturn is not null)
-            return Result.Fail("Book already returned");
+            return Result.Fail("Book already returned", ErrorType.Conflict);
 
         if (returnDate < DateOfLoan)
-            return Result.Fail("A book can only be returned after the loan date");
+            return Result.Fail("A book can only be returned after the loan date", ErrorType.Validation);
         
         DateOfReturn = returnDate;
         return Result.Ok();
