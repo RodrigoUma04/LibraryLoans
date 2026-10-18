@@ -1,5 +1,4 @@
 using LibraryLoans.Application.Contracts.Persistence;
-using LibraryLoans.Domain;
 using LibraryLoans.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
