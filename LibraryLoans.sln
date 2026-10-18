@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryLoans.Domain", "src\Core\LibraryLoans.Domain\LibraryLoans.Domain.csproj", "{8B0F4977-066D-40C8-9903-B865D2C0C208}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryLoans.Tests", "tests\LibraryLoans.Tests\LibraryLoans.Tests.csproj", "{D76591E0-826A-419D-A13A-3B75CF6B5176}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{8B0F4977-066D-40C8-9903-B865D2C0C208}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B0F4977-066D-40C8-9903-B865D2C0C208}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B0F4977-066D-40C8-9903-B865D2C0C208}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D76591E0-826A-419D-A13A-3B75CF6B5176}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D76591E0-826A-419D-A13A-3B75CF6B5176}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D76591E0-826A-419D-A13A-3B75CF6B5176}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D76591E0-826A-419D-A13A-3B75CF6B5176}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
