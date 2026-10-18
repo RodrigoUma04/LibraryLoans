@@ -1,6 +1,8 @@
 using LibraryLoans.Application.Contracts.Persistence;
+using LibraryLoans.Application.Exceptions;
 using LibraryLoans.Domain;
 using LibraryLoans.Domain.Common;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryLoans.Infrastructure;
@@ -17,7 +19,7 @@ public class LibraryLoansDbContext : DbContext, IUnitOfWork
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(LibraryLoansDbContext).Assembly);
     }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         DateTime now = DateTime.UtcNow;
 
@@ -29,8 +31,15 @@ public class LibraryLoansDbContext : DbContext, IUnitOfWork
             if(entry.State == EntityState.Added)
                 entry.Entity.DateCreated = now;
         }
-        
-        return base.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is SqliteException {SqliteExtendedErrorCode: 2067})
+        {
+            throw new ConflictException("The change conflicts with existing data", ex);
+        }
     }
     
     public DbSet<Book> Books => Set<Book>();                                                                                                                                                                                         

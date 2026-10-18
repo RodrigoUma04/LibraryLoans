@@ -1,0 +1,41 @@
+using LibraryLoans.Application.Contracts.Persistence;
+using LibraryLoans.Application.DTOs.Loan;
+using LibraryLoans.Domain;
+using LibraryLoans.Domain.Common;
+
+namespace LibraryLoans.Application.Services;
+
+public class LoanService(ILoanRepository loanRepository, IBookRepository bookRepository, IMemberRepository memberRepository, IUnitOfWork unitOfWork)
+{
+    private const int MaxActiveLoans = 5;
+    
+    public async Task<Result<GetLoanDto>> BorrowAsync(int bookId, int memberId, CancellationToken cancellationToken = default)
+    {
+        var member = await memberRepository.GetByIdAsync(memberId, cancellationToken);
+        if (member is null)
+            return Result<GetLoanDto>.Fail($"Member with id {memberId} not found", ErrorType.NotFound);
+        
+        var book = await bookRepository.GetByIdAsync(bookId, cancellationToken);
+        if (book is null)
+            return Result<GetLoanDto>.Fail($"Book with id {bookId} not found", ErrorType.NotFound);
+        
+        if (await loanRepository.IsBookBorrowedAsync(bookId, cancellationToken))
+            return Result<GetLoanDto>.Fail($"Book with id {bookId} is already borrowed at this time", ErrorType.Conflict);
+
+        var activeLoans = await loanRepository.GetActiveLoansByMemberAsync(memberId, cancellationToken);
+        
+        if (activeLoans.Count >= MaxActiveLoans)
+            return Result<GetLoanDto>.Fail($"Member with id {memberId} already has {MaxActiveLoans} or more books borrowed", ErrorType.Conflict);
+        
+        DateTime now = DateTime.UtcNow;
+        if (activeLoans.Any(l => l.IsOverdue(now)))
+            return Result<GetLoanDto>.Fail($"Member with id {memberId} cannot borrow due to an overdue loan", ErrorType.Conflict);
+
+        var loan = Loan.Create(bookId, memberId, now);
+        
+        loanRepository.Add(loan);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<GetLoanDto>.Ok(GetLoanDto.From(loan));
+    }
+}
