@@ -1,3 +1,4 @@
+using LibraryLoans.API;
 using LibraryLoans.Application;
 using LibraryLoans.Infrastructure;
 
@@ -8,11 +9,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddRouting(o => o.LowercaseUrls = true);
 
 builder.Services.ConfigureApplicationServices();
 builder.Services.ConfigurePersistenceServices(builder.Configuration);
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 using (var scope = app.Services.CreateScope())
     scope.ServiceProvider.GetRequiredService<LibraryLoansDbContext>().Database.EnsureCreated();

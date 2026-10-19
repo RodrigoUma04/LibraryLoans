@@ -21,29 +21,29 @@ public class LoanService(ILoanRepository loanRepository, IBookRepository bookRep
         return Result<IReadOnlyCollection<MemberLoanDto>>.Ok(loans);
     }
     
-    public async Task<Result<GetLoanDto>> BorrowAsync(int bookId, int memberId, CancellationToken cancellationToken = default)
+    public async Task<Result<GetLoanDto>> BorrowAsync(CreateLoanDto dto, CancellationToken cancellationToken = default)
     {
-        var member = await memberRepository.GetByIdAsync(memberId, cancellationToken);
+        var member = await memberRepository.GetByIdAsync(dto.MemberId, cancellationToken);
         if (member is null)
-            return Result<GetLoanDto>.Fail($"Member with id {memberId} not found", ErrorType.NotFound);
+            return Result<GetLoanDto>.Fail($"Member with id {dto.MemberId} not found", ErrorType.NotFound);
         
-        var book = await bookRepository.GetByIdAsync(bookId, cancellationToken);
+        var book = await bookRepository.GetByIdAsync(dto.BookId, cancellationToken);
         if (book is null)
-            return Result<GetLoanDto>.Fail($"Book with id {bookId} not found", ErrorType.NotFound);
+            return Result<GetLoanDto>.Fail($"Book with id {dto.BookId} not found", ErrorType.NotFound);
         
-        if (await loanRepository.IsBookBorrowedAsync(bookId, cancellationToken))
-            return Result<GetLoanDto>.Fail($"Book with id {bookId} is already borrowed at this time", ErrorType.Conflict);
+        if (await loanRepository.IsBookBorrowedAsync(dto.BookId, cancellationToken))
+            return Result<GetLoanDto>.Fail($"Book with id {dto.BookId} is already borrowed at this time", ErrorType.Conflict);
 
-        var activeLoans = await loanRepository.GetActiveLoansByMemberAsync(memberId, cancellationToken);
+        var activeLoans = await loanRepository.GetActiveLoansByMemberAsync(dto.MemberId, cancellationToken);
         
         if (activeLoans.Count >= MaxActiveLoans)
-            return Result<GetLoanDto>.Fail($"Member with id {memberId} already has {MaxActiveLoans} or more books borrowed", ErrorType.Conflict);
+            return Result<GetLoanDto>.Fail($"Member with id {dto.MemberId} already has {MaxActiveLoans} or more books borrowed", ErrorType.Conflict);
         
         var now = DateTime.UtcNow;
         if (activeLoans.Any(l => l.IsOverdue(now)))
-            return Result<GetLoanDto>.Fail($"Member with id {memberId} cannot borrow due to an overdue loan", ErrorType.Conflict);
+            return Result<GetLoanDto>.Fail($"Member with id {dto.MemberId} cannot borrow due to an overdue loan", ErrorType.Conflict);
 
-        var loan = Loan.Create(bookId, memberId, now);
+        var loan = Loan.Create(dto.BookId, dto.MemberId, now);
         
         loanRepository.Add(loan);
         await unitOfWork.SaveChangesAsync(cancellationToken);
