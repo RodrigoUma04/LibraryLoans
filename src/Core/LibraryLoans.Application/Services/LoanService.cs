@@ -8,6 +8,18 @@ namespace LibraryLoans.Application.Services;
 public class LoanService(ILoanRepository loanRepository, IBookRepository bookRepository, IMemberRepository memberRepository, IUnitOfWork unitOfWork)
 {
     private const int MaxActiveLoans = 5;
+
+    public async Task<Result<IReadOnlyCollection<MemberLoanDto>>> GetMemberLoansAsync(int memberId,
+        CancellationToken cancellationToken = default)
+    {
+        var member = await memberRepository.GetByIdAsync(memberId, cancellationToken);
+        if (member is null)
+            return Result<IReadOnlyCollection<MemberLoanDto>>.Fail($"Member with id {memberId} not found", ErrorType.NotFound);
+        
+        var loans = await loanRepository.GetLoansByMemberAsync(memberId, cancellationToken);
+        
+        return Result<IReadOnlyCollection<MemberLoanDto>>.Ok(loans);
+    }
     
     public async Task<Result<GetLoanDto>> BorrowAsync(int bookId, int memberId, CancellationToken cancellationToken = default)
     {
