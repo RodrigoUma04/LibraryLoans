@@ -27,7 +27,7 @@ public class LoanService(ILoanRepository loanRepository, IBookRepository bookRep
         if (activeLoans.Count >= MaxActiveLoans)
             return Result<GetLoanDto>.Fail($"Member with id {memberId} already has {MaxActiveLoans} or more books borrowed", ErrorType.Conflict);
         
-        DateTime now = DateTime.UtcNow;
+        var now = DateTime.UtcNow;
         if (activeLoans.Any(l => l.IsOverdue(now)))
             return Result<GetLoanDto>.Fail($"Member with id {memberId} cannot borrow due to an overdue loan", ErrorType.Conflict);
 
@@ -36,6 +36,20 @@ public class LoanService(ILoanRepository loanRepository, IBookRepository bookRep
         loanRepository.Add(loan);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
+        return Result<GetLoanDto>.Ok(GetLoanDto.From(loan));
+    }
+
+    public async Task<Result<GetLoanDto>> ReturnAsync(int loanId, CancellationToken cancellationToken = default)
+    {
+        var loan = await loanRepository.GetByIdAsync(loanId, cancellationToken);
+        if (loan is null)
+            return Result<GetLoanDto>.Fail($"Loan with id {loanId} not found", ErrorType.NotFound);
+        
+        var result = loan.Return(DateTime.UtcNow);
+        if(result.IsFailure)
+            return Result<GetLoanDto>.Fail(result.Errors, result.ErrorType!.Value);
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return Result<GetLoanDto>.Ok(GetLoanDto.From(loan));
     }
 }
