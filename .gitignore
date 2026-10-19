@@ -3,3 +3,6 @@
 bin/
 obj/
 *.DotSettings.user
+*.db
+*.db-shm
+*.db-wal
